@@ -1,0 +1,318 @@
+Organizations:
+    - &OrdererOrg
+        Name: OrdererMSP
+        ID: OrdererMSP
+        MSPDir: crypto-config/ordererOrganizations/gtbcsf.com/msp
+        Policies:
+            Readers:
+                Type: Signature
+                Rule: "OR('OrdererMSP.member')"
+            Writers:
+                Type: Signature
+                Rule: "OR('OrdererMSP.member')"
+            Admins:
+                Type: Signature
+                Rule: "OR('OrdererMSP.admin')"
+
+ 
+    - &BankOrg
+        Name: BankMSP
+        ID: BankMSP
+        MSPDir: crypto-config/peerOrganizations/bank.gtbcsf.com/msp
+        Policies:
+            Readers:
+                Type: Signature
+                Rule: "OR('BankMSP.admin', 'BankMSP.peer', 'BankMSP.client')"
+            Writers:
+                Type: Signature
+                Rule: "OR('BankMSP.admin', 'BankMSP.client')"
+            Admins:
+                Type: Signature
+                Rule: "OR('BankMSP.admin')"
+        AnchorPeers:
+            - Host: peer0.bank.gtbcsf.com
+              Port: 7051
+ 
+    - &CourtOrg
+        Name: CourtMSP
+        ID: CourtMSP
+        MSPDir: crypto-config/peerOrganizations/court.gtbcsf.com/msp
+        Policies:
+            Readers:
+                Type: Signature
+                Rule: "OR('CourtMSP.admin', 'CourtMSP.peer', 'CourtMSP.client')"
+            Writers:
+                Type: Signature
+                Rule: "OR('CourtMSP.admin', 'CourtMSP.client')"
+            Admins:
+                Type: Signature
+                Rule: "OR('CourtMSP.admin')"
+        AnchorPeers:
+            - Host: peer0.court.gtbcsf.com
+              Port: 7051
+ 
+    - &NotaryOfficeOrg
+        Name: NotaryOfficeMSP
+        ID: NotaryOfficeMSP
+        MSPDir: crypto-config/peerOrganizations/notary.gtbcsf.com/msp
+        Policies:
+            Readers:
+                Type: Signature
+                Rule: "OR('NotaryOfficeMSP.admin', 'NotaryOfficeMSP.peer', 'NotaryOfficeMSP.client')"
+            Writers:
+                Type: Signature
+                Rule: "OR('NotaryOfficeMSP.admin', 'NotaryOfficeMSP.client')"
+            Admins:
+                Type: Signature
+                Rule: "OR('NotaryOfficeMSP.admin')"
+        AnchorPeers:
+            - Host: peer0.notary.gtbcsf.com
+              Port: 7051
+ 
+    - &OperationOrg
+        Name: OperationMSP
+        ID: OperationMSP
+        MSPDir: crypto-config/peerOrganizations/operation.gtbcsf.com/msp
+        Policies:
+            Readers:
+                Type: Signature
+                Rule: "OR('OperationMSP.admin', 'OperationMSP.peer', 'OperationMSP.client')"
+            Writers:
+                Type: Signature
+                Rule: "OR('OperationMSP.admin', 'OperationMSP.client')"
+            Admins:
+                Type: Signature
+                Rule: "OR('OperationMSP.admin')"
+        AnchorPeers:
+            - Host: peer0.operation.gtbcsf.com
+              Port: 7051
+
+Capabilities:
+    Channel: &ChannelCapabilities
+        V1_4_3: true
+        V1_3: false
+        V1_1: false
+    Orderer: &OrdererCapabilities
+        V1_4_2: true
+        V1_1: false
+    Application: &ApplicationCapabilities
+        V1_4_2: true
+        V1_3: false
+        V1_2: false
+        V1_1: false
+
+Orderer: &OrdererDefaults
+    OrdererType: solo
+    Addresses:
+        - orderer.gtbcsf.com:7050
+    BatchTimeout: 2s
+    BatchSize:
+        MaxMessageCount: 500
+        AbsoluteMaxBytes: 10 MB
+        PreferredMaxBytes: 2 MB
+    MaxChannels: 0
+    Kafka:
+        Brokers:
+            - kafka0:9092
+            - kafka1:9092
+            - kafka2:9092
+    EtcdRaft:
+        Consenters:
+            - Host: orderer.gtbcsf.com
+              Port: 7050
+              ClientTLSCert: crypto-config/ordererOrganizations/gtbcsf.com/orderers/orderer.gtbcsf.com/tls/server.crt
+              ServerTLSCert: crypto-config/ordererOrganizations/gtbcsf.com/orderers/orderer.gtbcsf.com/tls/server.crt
+            - Host: orderer2.gtbcsf.com
+              Port: 7050
+              ClientTLSCert: crypto-config/ordererOrganizations/gtbcsf.com/orderers/orderer2.gtbcsf.com/tls/server.crt
+              ServerTLSCert: crypto-config/ordererOrganizations/gtbcsf.com/orderers/orderer2.gtbcsf.com/tls/server.crt
+            - Host: orderer3.gtbcsf.com
+              Port: 7050
+              ClientTLSCert: crypto-config/ordererOrganizations/gtbcsf.com/orderers/orderer3.gtbcsf.com/tls/server.crt
+              ServerTLSCert: crypto-config/ordererOrganizations/gtbcsf.com/orderers/orderer3.gtbcsf.com/tls/server.crt
+        Options:
+            TickInterval: 500ms
+            ElectionTick: 10
+            HeartbeatTick: 1
+            MaxInflightBlocks: 5
+            SnapshotIntervalSize: 20 MB
+    Organizations:
+    Policies:
+        Readers:
+            Type: ImplicitMeta
+            Rule: "ANY Readers"
+        Writers:
+            Type: ImplicitMeta
+            Rule: "ANY Writers"
+        Admins:
+            Type: ImplicitMeta
+            Rule: "MAJORITY Admins"
+        BlockValidation:
+            Type: ImplicitMeta
+            Rule: "ANY Writers"
+    Capabilities:
+        <<: *OrdererCapabilities
+
+Application: &ApplicationDefaults
+    ACLs: &ACLsDefault
+        lscc/ChaincodeExists: /Channel/Application/Readers
+        lscc/GetDeploymentSpec: /Channel/Application/Readers
+        lscc/GetChaincodeData: /Channel/Application/Readers
+        lscc/GetInstantiatedChaincodes: /Channel/Application/Readers
+        qscc/GetChainInfo: /Channel/Application/Readers
+        qscc/GetBlockByNumber: /Channel/Application/Readers
+        qscc/GetBlockByHash: /Channel/Application/Readers
+        qscc/GetTransactionByID: /Channel/Application/Readers
+        qscc/GetBlockByTxID: /Channel/Application/Readers
+        cscc/GetConfigBlock: /Channel/Application/Readers
+        cscc/GetConfigTree: /Channel/Application/Readers
+        cscc/SimulateConfigTreeUpdate: /Channel/Application/Readers
+        peer/Propose: /Channel/Application/Writers
+        peer/ChaincodeToChaincode: /Channel/Application/Readers
+        event/Block: /Channel/Application/Readers
+        event/FilteredBlock: /Channel/Application/Readers
+    Organizations:
+    Policies: &ApplicationDefaultPolicies
+        Readers:
+            Type: ImplicitMeta
+            Rule: "ANY Readers"
+        Writers:
+            Type: ImplicitMeta
+            Rule: "ANY Writers"
+        Admins:
+            Type: ImplicitMeta
+            Rule: "MAJORITY Admins"
+    Capabilities:
+        <<: *ApplicationCapabilities
+
+
+Channel: &ChannelDefaults
+    Policies:
+        Readers:
+            Type: ImplicitMeta
+            Rule: "ANY Readers"
+        Writers:
+            Type: ImplicitMeta
+            Rule: "ANY Writers"
+        Admins:
+            Type: ImplicitMeta
+            Rule: "MAJORITY Admins"
+    Capabilities:
+        <<: *ChannelCapabilities
+
+Profiles:
+    EtcdRaftOrdererGenesis:
+        <<: *ChannelDefaults
+        Capabilities:
+            <<: *ChannelCapabilities
+        Orderer:
+            <<: *OrdererDefaults
+            OrdererType: etcdraft
+            EtcdRaft:
+                Consenters:
+                - Host: orderer.gtbcsf.com
+                  Port: 7050
+                  ClientTLSCert: crypto-config/ordererOrganizations/gtbcsf.com/orderers/orderer.gtbcsf.com/tls/server.crt
+                  ServerTLSCert: crypto-config/ordererOrganizations/gtbcsf.com/orderers/orderer.gtbcsf.com/tls/server.crt
+                - Host: orderer2.gtbcsf.com
+                  Port: 7050
+                  ClientTLSCert: crypto-config/ordererOrganizations/gtbcsf.com/orderers/orderer2.gtbcsf.com/tls/server.crt
+                  ServerTLSCert: crypto-config/ordererOrganizations/gtbcsf.com/orderers/orderer2.gtbcsf.com/tls/server.crt
+                - Host: orderer3.gtbcsf.com
+                  Port: 7050
+                  ClientTLSCert: crypto-config/ordererOrganizations/gtbcsf.com/orderers/orderer3.gtbcsf.com/tls/server.crt
+                  ServerTLSCert: crypto-config/ordererOrganizations/gtbcsf.com/orderers/orderer3.gtbcsf.com/tls/server.crt
+            Addresses:
+                - orderer.gtbcsf.com:7050
+                - orderer2.gtbcsf.com:7050
+                - orderer3.gtbcsf.com:7050
+
+            Organizations:
+            - *OrdererOrg
+            Capabilities:
+                <<: *OrdererCapabilities
+        Application:
+            <<: *ApplicationDefaults
+            Organizations:
+            - <<: *OrdererOrg
+        Consortiums:
+            SampleConsortium:
+                Organizations:
+                - *BankOrg
+                - *NotaryOfficeOrg
+                - *CourtOrg
+                - *OperationOrg
+
+    KafkaOrdererGenesis:
+        <<: *ChannelDefaults
+        Capabilities:
+            <<: *ChannelCapabilities
+        Orderer:
+            <<: *OrdererDefaults
+            OrdererType: kafka
+            Kafka:
+                Brokers:
+                - kafka.gtbcsf.com:9092
+
+            Organizations:
+            - *OrdererOrg
+            Capabilities:
+                <<: *OrdererCapabilities
+        Application:
+            <<: *ApplicationDefaults
+            Organizations:
+            - <<: *OrdererOrg
+        Consortiums:
+            SampleConsortium:
+                Organizations:
+                - *BankOrg
+                - *NotaryOfficeOrg
+                - *CourtOrg
+
+    SoloOrdererGenesis:
+        <<: *ChannelDefaults
+        Orderer:
+            <<: *OrdererDefaults
+            Organizations:
+                - *OrdererOrg
+            Capabilities:
+                <<: *OrdererCapabilities
+        Consortiums:
+            SampleConsortium:
+                Organizations:
+                    - *CourtOrg
+
+    FourOrgsChannel:
+        Consortium: SampleConsortium
+        <<: *ChannelDefaults
+        Application:
+            <<: *ApplicationDefaults
+            Organizations:
+                - *BankOrg
+                - *NotaryOfficeOrg
+                - *CourtOrg
+                - *OperationOrg
+            Capabilities:
+                <<: *ApplicationCapabilities
+
+    ThreeOrgsChannel:
+        Consortium: SampleConsortium
+        <<: *ChannelDefaults
+        Application:
+            <<: *ApplicationDefaults
+            Organizations:
+                - *BankOrg
+                - *NotaryOfficeOrg
+                - *CourtOrg
+            Capabilities:
+                <<: *ApplicationCapabilities
+
+    OneOrgChannel:
+        Consortium: SampleConsortium
+        <<: *ChannelDefaults
+        Application:
+            <<: *ApplicationDefaults
+            Organizations:
+                - *CourtOrg
+            Capabilities:
+                <<: *ApplicationCapabilities
