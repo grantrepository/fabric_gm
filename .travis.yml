@@ -2,6 +2,7 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 #
+dist: precise
 
 language: go
 go:
@@ -91,6 +92,6 @@ notifications:
     recipients:
       - 362681828@qq.com
       
-    on_success: never # default: change
+    on_success: change # default: change
     on_failure: never # default: always
   
